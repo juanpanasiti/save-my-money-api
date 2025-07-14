@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import date
 
 
-from core.shared.value_objects.amount import Amount
+from core.shared.value_objects import Amount
 from .account import Account
 
 
@@ -74,4 +74,3 @@ class CreditCard(Account):
         if value.value < 0:
             raise ValueError('financing_limit cannot be negative')
         self._financing_limit = value
-

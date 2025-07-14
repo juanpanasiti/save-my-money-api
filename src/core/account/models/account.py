@@ -2,11 +2,11 @@ from abc import ABC, abstractmethod
 from uuid import UUID
 from typing import Optional
 
-from ...shared.base_entity import BaseEntity
-from ...shared.value_objects.amount import Amount
+from ...shared.entity_base import EntityBase
+from ...shared.value_objects import Amount
 
 
-class Account(BaseEntity, ABC):
+class Account(EntityBase, ABC):
     def __init__(
         self,
         alias: str,

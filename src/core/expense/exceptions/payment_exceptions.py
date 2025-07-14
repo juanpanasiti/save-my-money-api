@@ -1,4 +1,4 @@
-from ..shared.exception_base import ExceptionBase
+from ...shared.exception_base import ExceptionBase
 
 
 class PaymentNotFoundInPurchaseException(ExceptionBase):

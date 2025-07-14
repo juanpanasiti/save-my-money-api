@@ -28,7 +28,7 @@ class Expense(EntityBase, ABC):
         first_payment_date: Optional[date] = None,
         status: ExpenseStatus = ExpenseStatus.ACTIVE,
         category: Optional[Category] = None,
-        payments: Optional[List[Payment]] = None,  # TODO: Define payments type
+        payments: List[Payment] = [],
         id: Optional[UUID] = None
     ):
         super().__init__(id)
@@ -147,12 +147,12 @@ class Expense(EntityBase, ABC):
         self._category = value
 
     @property
-    def payments(self) -> list:
+    def payments(self) -> List[Payment]:
         'Get the payments list.'
         return self._payments
 
     @payments.setter
-    def payments(self, value: list):
+    def payments(self, value: List[Payment]):
         'Set the payments list.'
         self._payments = value
 

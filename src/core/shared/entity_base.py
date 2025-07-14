@@ -4,7 +4,7 @@ from typing import Optional
 from abc import ABC, abstractmethod
 
 
-class BaseEntity(ABC):
+class EntityBase(ABC):
     def __init__(self, id: Optional[UUID] = uuid4()):
         self.id = id
 

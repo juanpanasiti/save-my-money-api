@@ -5,11 +5,13 @@ from datetime import date
 from ...shared.entity_base import EntityBase
 from ...shared.value_objects import Amount
 from ..enums import PaymentStatus
+from expense import Expense
 
 
 class Payment(EntityBase):
     def __init__(
             self,
+            expense: Expense,
             amount: Amount,
             no_installment: int,
             status: PaymentStatus = PaymentStatus.UNCONFIRMED,
@@ -17,10 +19,23 @@ class Payment(EntityBase):
             id: Optional[UUID] = None
     ) -> None:
         super().__init__(id)
+        self._expense = expense
         self._amount = amount
         self._no_installment = no_installment
         self._status = status
         self._payment_date = payment_date
+
+    @property
+    def expense(self) -> Expense:
+        'Get the associated expense for this payment.'
+        return self._expense
+
+    @expense.setter
+    def expense(self, value: Expense):
+        'Set the associated expense for this payment.'
+        if not isinstance(value, Expense):
+            raise ValueError('expense must be an instance of Expense')
+        self._expense = value
 
     @property
     def amount(self) -> Amount:
@@ -69,7 +84,11 @@ class Payment(EntityBase):
     @classmethod
     def from_dict(cls, data: dict) -> 'Payment':
         '''Create a Payment instance from a dictionary representation.'''
+        expense = data.get('expense')
+        if not isinstance(expense, Expense):
+            raise ValueError('expense must be an instance of Expense')
         return cls(
+            expense=expense,
             amount=Amount(data['amount']),
             no_installment=data['no_installment'],
             status=PaymentStatus(data['status']),

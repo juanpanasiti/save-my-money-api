@@ -4,8 +4,9 @@ from datetime import date
 
 from ...shared.entity_base import EntityBase
 from ...shared.value_objects import Amount
-from ..enums import PaymentStatus
+from ..enums import PaymentStatus, ExpenseType
 from expense import Expense
+from purchase import Purchase
 
 
 class Payment(EntityBase):
@@ -95,3 +96,19 @@ class Payment(EntityBase):
             payment_date=data.get('payment_date'),
             id=data.get('id')
         )
+
+    def is_one_time_payment(self) -> bool:
+        'Check if the payment is a one-time payment.'
+        if self._expense.expense_type != ExpenseType.PURCHASE:
+            return False
+        return self._expense.installments == 1
+
+    def is_last_payment(self) -> bool:
+        'Check if this is the last payment for the expense.'
+        if not isinstance(self._expense, Purchase):
+            return False
+        if self.is_final_status():
+            return False
+        total_installments = self._expense.installments
+        pending_installments = self._expense.pending_installments
+        return (total_installments - pending_installments) == 1

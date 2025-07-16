@@ -1,10 +1,12 @@
 from uuid import UUID
-from typing import Optional
+from typing import Optional, List
 from datetime import date
 
 
-from core.shared.value_objects import Amount
+from ...expense.models.expense import Expense
+from ...period.models.period import Period
 from .account import Account
+from core.shared.value_objects import Amount
 
 
 class CreditCard(Account):
@@ -17,6 +19,8 @@ class CreditCard(Account):
         next_closing_date: Optional[date] = None,
         next_expiring_date: Optional[date] = None,
         financing_limit: Amount = Amount(0),
+        expenses: List[Expense] = [],
+        periods: List[Period] = [],
         id: Optional[UUID] = None,
     ):
         super().__init__(alias, limit, is_enabled, id)
@@ -24,8 +28,8 @@ class CreditCard(Account):
         self._next_closing_date = next_closing_date
         self._next_expiring_date = next_expiring_date
         self._financing_limit = financing_limit
-        # TODO: Expenses
-        # TODO: Periods
+        self._expenses = expenses
+        self._periods = periods if periods is not None else []
 
     @property
     def main_credit_card_id(self) -> Optional[UUID]:
@@ -74,6 +78,30 @@ class CreditCard(Account):
         if value.value < 0:
             raise ValueError('financing_limit cannot be negative')
         self._financing_limit = value
+
+    @property
+    def available_limit(self) -> Amount:
+        'Calculate the available limit of the credit card.'
+        total_expenses = sum(expense.pending_amount.value for expense in self._expenses)
+        return Amount(self._limit.value - total_expenses)
+
+    @property
+    def available_financing_limit(self) -> Amount:
+        'Calculate the available financing limit of the credit card.'
+        total_financing = sum(expense.pending_financing_amount.value for expense in self._expenses)
+        return Amount(self._financing_limit.value - total_financing)
+
+    @property
+    def periods(self) -> List[Period]:
+        'Get the list of periods associated with the credit card.'
+        return self._periods
+
+    @periods.setter
+    def periods(self, value: List[Period]):
+        'Set the list of periods associated with the credit card.'
+        if not isinstance(value, list) or not all(isinstance(p, Period) for p in value):
+            raise ValueError('periods must be a list of Period instances')
+        self._periods = value
 
     @classmethod
     def from_dict(cls, data: dict) -> 'CreditCard':

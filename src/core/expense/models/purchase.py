@@ -5,7 +5,7 @@ from typing import List
 
 from ...shared.value_objects import Amount
 from ...account.models.account import Account
-from ..exceptions import PaymentNotFoundInPurchaseException
+from ..exceptions import PaymentNotFoundInExpenseException
 from ..enums import ExpenseType, ExpenseStatus, PaymentStatus
 from .expense import Expense
 from .expense_category import ExpenseCategory as Category
@@ -96,7 +96,7 @@ class Purchase(Expense):
         'Update a specific payment and adjust the purchase status and unconfirmed payment amounts accordingly.'
         payment_to_update = next((p for p in self._payments if p.id == payment.id), None)
         if not payment_to_update:
-            raise PaymentNotFoundInPurchaseException(f'Payment with id {payment.id} not found in purchase.')
+            raise PaymentNotFoundInExpenseException(f'Payment with id {payment.id} not found in purchase.')
 
         payment_to_update.amount = payment.amount
         payment_to_update.status = payment.status

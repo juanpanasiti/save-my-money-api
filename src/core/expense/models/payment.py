@@ -65,3 +65,14 @@ class Payment(EntityBase):
     def is_final_status(self) -> bool:
         'Check if the payment status is final.'
         return self._status in {PaymentStatus.PAID, PaymentStatus.CANCELED}
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'Payment':
+        '''Create a Payment instance from a dictionary representation.'''
+        return cls(
+            amount=Amount(data['amount']),
+            no_installment=data['no_installment'],
+            status=PaymentStatus(data['status']),
+            payment_date=data.get('payment_date'),
+            id=data.get('id')
+        )

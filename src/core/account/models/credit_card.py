@@ -74,3 +74,17 @@ class CreditCard(Account):
         if value.value < 0:
             raise ValueError('financing_limit cannot be negative')
         self._financing_limit = value
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'CreditCard':
+        '''Create a CreditCard instance from a dictionary representation.'''
+        return cls(
+            alias=data['alias'],
+            limit=Amount(data['limit']),
+            is_enabled=data.get('is_enabled', True),
+            main_credit_card_id=data.get('main_credit_card_id'),
+            next_closing_date=data.get('next_closing_date'),
+            next_expiring_date=data.get('next_expiring_date'),
+            financing_limit=Amount(data.get('financing_limit', 0)),
+            id=data.get('id')
+        )

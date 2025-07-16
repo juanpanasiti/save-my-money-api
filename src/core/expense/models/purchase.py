@@ -110,10 +110,27 @@ class Purchase(Expense):
         if all(payment.status == PaymentStatus.CONFIRMED for payment in pending_payments):
             self.amount = Amount(sum(payment.amount.value for payment in pending_payments))
             return
-        
+
         for payment in pending_payments:
             if payment.status == PaymentStatus.CONFIRMED:
                 continue
             else:
                 payment.amount = Amount(pendig_amount.value / len(pending_payments))
                 pendig_amount = Amount(pendig_amount.value - payment.amount.value)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'Purchase':
+        '''Create a Purchase instance from a dictionary representation.'''
+        payments = [Payment.from_dict(payment) for payment in data.get('payments', [])]
+        return cls(
+            account=data['account'],
+            title=data['title'],
+            cc_name=data['cc_name'],
+            acquired_at=data['acquired_at'],
+            amount=Amount(data['amount']),
+            installments=data.get('installments', 1),
+            first_payment_date=data.get('first_payment_date'),
+            category=data.get('category'),
+            payments=payments,
+            id=data.get('id')
+        )

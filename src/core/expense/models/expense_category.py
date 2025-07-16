@@ -49,3 +49,13 @@ class ExpenseCategory(EntityBase):
         if not isinstance(value, bool):
             raise ValueError('is_income must be a boolean value')
         self._is_income = value
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'ExpenseCategory':
+        '''Create an ExpenseCategory instance from a dictionary representation.'''
+        return cls(
+            name=data['name'],
+            description=data.get('description'),
+            is_income=data.get('is_income', False),
+            id=data.get('id')
+        )

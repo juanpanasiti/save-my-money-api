@@ -101,3 +101,19 @@ class Subscription(Expense):
         last_payment = self._payments[-1] if self._payments else None
         if last_payment and last_payment.amount != self._amount:
             self._amount = last_payment.amount
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'Subscription':
+        '''Create a Subscription instance from a dictionary representation.'''
+        payments = [Payment.from_dict(payment) for payment in data.get('payments', [])]
+        return cls(
+            account=data['account'],
+            title=data['title'],
+            cc_name=data['cc_name'],
+            acquired_at=data['acquired_at'],
+            amount=Amount(data['amount']),
+            first_payment_date=data.get('first_payment_date'),
+            category=data.get('category'),
+            payments=payments,
+            id=data.get('id')
+        )

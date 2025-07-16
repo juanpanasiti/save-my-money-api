@@ -8,13 +8,12 @@ class EntityBase(ABC):
     def __init__(self, id: Optional[UUID] = uuid4()):
         self.id = id
 
-    @abstractmethod
     def to_dict(self) -> dict:
-        'Serialize the entity into a dict.'
-        pass
+        '''Convert the entity to a dictionary representation.'''
+        return self.__dict__
 
     @classmethod
     @abstractmethod
-    def from_dict(cls, data: dict):
-        'Create an entity instance from a dict.'
-        pass
+    def from_dict(cls, data: dict)-> 'EntityBase':
+        '''Create an entity instance from a dictionary representation.'''
+        ...

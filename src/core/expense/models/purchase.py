@@ -3,6 +3,7 @@ from typing import Optional
 from datetime import date
 from typing import List
 
+from ...shared.helpers.dates import add_months_to_date
 from ...shared.value_objects import Amount
 from ...account.models.account import Account
 from ..exceptions import PaymentNotFoundInExpenseException
@@ -46,12 +47,6 @@ class Purchase(Expense):
             self.calculate_payments()
 
     @property
-    def pending_amount(self) -> Amount:
-        'Calculate the pending amount of the purchase.'
-        total_paid = sum(payment.amount.value for payment in self._payments if not payment.is_final_status())
-        return Amount(self._amount.value - total_paid)
-
-    @property
     def paid_amount(self) -> Amount:
         'Calculate the total amount paid for the purchase.'
         total_paid = sum(payment.amount.value for payment in self._payments if payment.is_final_status())
@@ -67,23 +62,45 @@ class Purchase(Expense):
         'Calculate the number of installments that have been paid.'
         return len([payment for payment in self._payments if payment.is_final_status()])
 
+    @property
+    def pending_financing_amount(self) -> Amount:
+        '''Calculate the pending financing amount of the purchase.'''
+        total_financing = Amount(0)
+        if self._installments == 1:
+            # If there is only one installment, there is no financing
+            return total_financing
+        for payment in self._payments:
+            if not payment.is_final_status():
+                total_financing += payment.amount
+        return total_financing
+
+    @property
+    def pending_amount(self) -> Amount:
+        'Calculate the pending amount of the purchase made in one payment.'
+        if self._installments > 1:
+            return Amount(0)
+        # If the purchase has only one installment and it is not a final status, return the total amount
+        if self._payments[0].is_final_status():
+            return Amount(0)
+        return self._amount
+
     def calculate_payments(self) -> None:
-        payments: List = []
         remaining_amount = self._amount.value
         remaining_installments = self._installments
         payment_date: date = self._first_payment_date or self._acquired_at
         for no in range(1, self._installments + 1):
             installment_amount = Amount(remaining_amount / remaining_installments)
-            payment = {
-                'amount': installment_amount,
-                'no_installment': no,
-                'status': PaymentStatus.UNCONFIRMED,
-                'payment_date': payment_date
-            }
-            payments.append(payment)
+            payment = Payment(
+                expense=self,
+                amount=installment_amount,
+                no_installment=no,
+                status=PaymentStatus.UNCONFIRMED,
+                payment_date=payment_date
+            )
+            self._payments.append(payment)
             remaining_amount -= installment_amount.value
             remaining_installments -= 1
-            payment_date = payment_date.replace(day=payment_date.day + 30)
+            payment_date = add_months_to_date(payment_date, 1) if self._installments > 1 else payment_date
 
     def update_status(self) -> None:
         'Update the status of the purchase based on current conditions.'

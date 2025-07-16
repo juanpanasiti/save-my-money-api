@@ -160,3 +160,20 @@ class Expense(EntityBase, ABC):
     def calculate_payments(self) -> None:
         'Calculate the payments based on the expense details.'
         ...
+
+    @property
+    @abstractmethod
+    def pending_amount(self) -> Amount:
+        'Calculate the pending amount of the expense.'
+        ...
+
+    @property
+    @abstractmethod
+    def pending_financing_amount(self) -> Amount:
+        'Calculate the pending financing amount of the expense.'
+        ...
+
+    @property
+    def total_pending_amount(self) -> Amount:
+        'Calculate the total pending amount of the expense.'
+        return self.pending_amount + self.pending_financing_amount

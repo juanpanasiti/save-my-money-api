@@ -3,6 +3,7 @@ from typing import Optional
 from datetime import date
 from typing import List
 
+from ...shared.helpers.dates import add_months_to_date
 from ...shared.value_objects import Amount
 from ...account.models.account import Account
 from ..exceptions import PaymentNotFoundInExpenseException
@@ -10,7 +11,6 @@ from ..enums import ExpenseType, ExpenseStatus, PaymentStatus
 from .expense import Expense
 from .expense_category import ExpenseCategory as Category
 from .payment import Payment
-from ...shared.helpers.dates import add_months_to_date
 
 
 class Subscription(Expense):
@@ -45,8 +45,20 @@ class Subscription(Expense):
         if not payments:
             self.calculate_payments()
 
+    @property
+    def pending_amount(self) -> Amount:
+        'Calculate the pending amount of the subscription.'
+        total_pending = sum(payment.amount.value for payment in self._payments if payment.status == PaymentStatus.CONFIRMED)
+        return Amount(total_pending)
+
+    @property
+    def pending_financing_amount(self) -> Amount:
+        'A suscription has not financing amounts.'
+        return Amount(0)
+
     def calculate_payments(self) -> None:
         payment = Payment(
+            expense=self,
             amount=self._amount,
             no_installment=1,
             status=PaymentStatus.UNCONFIRMED,
@@ -55,6 +67,8 @@ class Subscription(Expense):
         self._payments.append(payment)
 
     def add_new_payment(self, payment: Payment) -> None:
+        if payment.expense.id != self.id:
+            raise ValueError('Payment expense ID does not match subscription ID')
         self._amount = payment.amount
         self._payments.append(payment)
         self.__sort_payments_by_date()
@@ -84,6 +98,7 @@ class Subscription(Expense):
         last_payment_date = self._payments[-1].payment_date if self._payments else None
         next_payment_date = add_months_to_date(last_payment_date, 1) if last_payment_date else self._acquired_at
         return Payment(
+            expense=self,
             amount=Amount(self._amount.value * factor.value),
             no_installment=len(self._payments) + 1,
             status=PaymentStatus.SIMULATED if is_simulated else PaymentStatus.UNCONFIRMED,

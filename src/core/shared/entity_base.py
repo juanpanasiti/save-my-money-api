@@ -5,8 +5,8 @@ from abc import ABC, abstractmethod
 
 
 class EntityBase(ABC):
-    def __init__(self, id: Optional[UUID] = uuid4()):
-        self.id = id
+    def __init__(self, id: Optional[UUID] = None):
+        self.id = id if id is not None else uuid4()
 
     def to_dict(self) -> dict:
         '''Convert the entity to a dictionary representation.'''

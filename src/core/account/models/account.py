@@ -4,20 +4,28 @@ from typing import Optional
 
 from ...shared.entity_base import EntityBase
 from ...shared.value_objects import Amount
+from ...user import User
 
 
 class Account(EntityBase, ABC):
     def __init__(
         self,
+        owner: User,
         alias: str,
         limit: Amount = Amount(0),
         is_enabled: bool = True,
         id: Optional[UUID] = None
     ):
         super().__init__(id)
+        self._owner = owner
         self._alias = alias
         self._limit = limit
         self._is_enabled = is_enabled
+
+    @property
+    def owner(self) -> User:
+        'Get the owner of the account.'
+        return self._owner
 
     @property
     def alias(self) -> str:

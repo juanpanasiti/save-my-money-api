@@ -20,6 +20,11 @@ class RepositoryBase(ABC, Generic[T]):
         ...
 
     @abstractmethod
+    def get_by_id(self, id: UUID) -> Optional[T]:
+        '''Get an entity by its ID.'''
+        ...
+
+    @abstractmethod
     def save(self, entity: T) -> T:
         '''Save an entity, either creating or updating it based on its ID.'''
         ...

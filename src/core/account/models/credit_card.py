@@ -5,6 +5,7 @@ from datetime import date
 
 from ...expense.models.expense import Expense
 from ...period.models.period import Period
+from ...user import User
 from .account import Account
 from core.shared.value_objects import Amount
 
@@ -12,6 +13,7 @@ from core.shared.value_objects import Amount
 class CreditCard(Account):
     def __init__(
         self,
+        owner: User,
         alias: str,
         limit: Amount,
         is_enabled: bool = True,
@@ -23,7 +25,7 @@ class CreditCard(Account):
         periods: List[Period] = [],
         id: Optional[UUID] = None,
     ):
-        super().__init__(alias, limit, is_enabled, id)
+        super().__init__(owner, alias, limit, is_enabled, id)
         self._main_credit_card_id = main_credit_card_id
         self._next_closing_date = next_closing_date
         self._next_expiring_date = next_expiring_date
@@ -107,6 +109,7 @@ class CreditCard(Account):
     def from_dict(cls, data: dict) -> 'CreditCard':
         '''Create a CreditCard instance from a dictionary representation.'''
         return cls(
+            owner=User.from_dict(data['owner']),
             alias=data['alias'],
             limit=Amount(data['limit']),
             is_enabled=data.get('is_enabled', True),

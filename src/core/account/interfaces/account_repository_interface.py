@@ -4,8 +4,9 @@ from typing import Optional, Generic, TypeVar
 from ...shared.paginated_result import PaginatedResult
 from ...shared.filter_base import FilterBase
 from ...shared.interfaces.repository_base import RepositoryBase
+from ..models import Account
 
-T = TypeVar('T')
+T = TypeVar('T', bound=Account)
 
 
 class AccountRepositoryInterface(RepositoryBase[T], Generic[T]):
